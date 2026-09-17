@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ledger — Personal Finance</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app">
+  <nav class="sidenav">
+    <div class="brand">
+      <span class="brand-mark">L</span>
+      <span class="brand-name">Ledger</span>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#dashboard" class="nav-link active" data-view="dashboard">Dashboard</a></li>
+      <li><a href="#transactions" class="nav-link" data-view="transactions">Income &amp; Expenses</a></li>
+      <li><a href="#accounts" class="nav-link" data-view="accounts">Accounts</a></li>
+      <li><a href="#cards" class="nav-link" data-view="cards">Credit Cards</a></li>
+      <li><a href="#budgets" class="nav-link" data-view="budgets">Budgets</a></li>
+      <li><a href="#savings" class="nav-link" data-view="savings">Savings Goals</a></li>
+      <li><a href="#bills" class="nav-link" data-view="bills">Bills</a></li>
+    </ul>
+    <div class="sidenav-footer">Version 1 — local &amp; manual entry</div>
+  </nav>
+
+  <main class="content">
+
+    <!-- DASHBOARD -->
+    <section id="view-dashboard" class="view active">
+      <header class="view-header">
+        <h1>Dashboard</h1>
+        <p class="subtitle" id="today-label"></p>
+      </header>
+
+      <div id="warnings" class="warnings"></div>
+
+      <div class="stat-grid">
+        <div class="stat-card highlight">
+          <span class="stat-label">Current Balance</span>
+          <span class="stat-value" id="stat-balance">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Monthly Income</span>
+          <span class="stat-value" id="stat-income">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Monthly Expenses</span>
+          <span class="stat-value" id="stat-expenses">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Remaining Budget</span>
+          <span class="stat-value" id="stat-remaining-budget">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Cash</span>
+          <span class="stat-value" id="stat-cash">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Bank</span>
+          <span class="stat-value" id="stat-bank">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Total Savings</span>
+          <span class="stat-value" id="stat-savings">—</span>
+        </div>
+        <div class="stat-card debt">
+          <span class="stat-label">Credit Card Debt</span>
+          <span class="stat-value" id="stat-debt">—</span>
+        </div>
+      </div>
+
+      <div class="panel-row">
+        <div class="panel">
+          <h2>Budgets this month</h2>
+          <div id="dash-budgets" class="list-block"></div>
+        </div>
+        <div class="panel">
+          <h2>Savings goals</h2>
+          <div id="dash-goals" class="list-block"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Bills due within 7 days</h2>
+        <div id="dash-bills" class="list-block"></div>
+      </div>
+    </section>
+
+    <!-- INCOME & EXPENSES -->
+    <section id="view-transactions" class="view">
+      <header class="view-header">
+        <h1>Income &amp; Expenses</h1>
+        <p class="subtitle">Record what came in and what went out</p>
+      </header>
+
+      <div class="panel-row">
+        <div class="panel form-panel">
+          <h2>Add income</h2>
+          <form id="form-income">
+            <label>Amount<input type="number" step="0.01" name="amount" required /></label>
+            <label>Category
+              <select name="category" required>
+                <option>Salary</option><option>Bonus</option><option>Freelance Income</option><option>Other Income</option>
+              </select>
+            </label>
+            <label>Date<input type="date" name="date" required /></label>
+            <label>Account
+              <select name="account_id" required data-fill="accounts"></select>
+            </label>
+            <label>Description<input type="text" name="description" /></label>
+            <button type="submit">Add income</button>
+          </form>
+        </div>
+
+        <div class="panel form-panel">
+          <h2>Add expense</h2>
+          <form id="form-expense">
+            <label>Amount<input type="number" step="0.01" name="amount" required /></label>
+            <label>Category
+              <select name="category" required>
+                <option>Food</option><option>Transport</option><option>Fuel</option><option>Internet</option>
+                <option>Mobile</option><option>Shopping</option><option>Education</option><option>Family</option>
+                <option>Entertainment</option><option>Medical</option><option>Bills</option><option>Other</option>
+              </select>
+            </label>
+            <label>Date<input type="date" name="date" required /></label>
+            <label>Paid with
+              <select name="source" required>
+                <option value="">Select a source…</option>
+              </select>
+            </label>
+            <label>Description<input type="text" name="description" /></label>
+            <button type="submit">Add expense</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Recent transactions</h2>
+        <table class="txn-table">
+          <thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Description</th><th>Amount</th><th></th></tr></thead>
+          <tbody id="txn-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ACCOUNTS -->
+    <section id="view-accounts" class="view">
+      <header class="view-header">
+        <h1>Accounts</h1>
+        <p class="subtitle">Cash and bank accounts</p>
+      </header>
+
+      <div class="panel-row">
+        <div class="panel form-panel">
+          <h2>Add account</h2>
+          <form id="form-account">
+            <label>Name<input type="text" name="name" required /></label>
+            <label>Type
+              <select name="type" required>
+                <option value="bank">Bank</option>
+                <option value="cash">Cash</option>
+              </select>
+            </label>
+            <label>Bank name (if applicable)<input type="text" name="bank_name" /></label>
+            <label>Opening balance<input type="number" step="0.01" name="balance" value="0" /></label>
+            <button type="submit">Add account</button>
+          </form>
+        </div>
+        <div class="panel form-panel">
+          <h2>Transfer between accounts</h2>
+          <form id="form-transfer">
+            <label>From<select name="from_account_id" required data-fill="accounts"></select></label>
+            <label>To<select name="to_account_id" required data-fill="accounts"></select></label>
+            <label>Amount<input type="number" step="0.01" name="amount" required /></label>
+            <label>Date<input type="date" name="date" required /></label>
+            <button type="submit">Transfer</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Your accounts</h2>
+        <div id="accounts-list" class="card-grid"></div>
+      </div>
+    </section>
+
+    <!-- CREDIT CARDS -->
+    <section id="view-cards" class="view">
+      <header class="view-header">
+        <h1>Credit Cards</h1>
+        <p class="subtitle">Track limits, balances and payments</p>
+      </header>
+
+      <div class="panel-row">
+        <div class="panel form-panel">
+          <h2>Add credit card</h2>
+          <form id="form-card">
+            <label>Card name<input type="text" name="card_name" required /></label>
+            <label>Bank<input type="text" name="bank_name" /></label>
+            <label>Credit limit<input type="number" step="0.01" name="credit_limit" required /></label>
+            <label>Current balance<input type="number" step="0.01" name="current_balance" value="0" /></label>
+            <label>Billing day of month<input type="number" min="1" max="31" name="billing_date" /></label>
+            <label>Due day of month<input type="number" min="1" max="31" name="due_date" /></label>
+            <label>Minimum payment<input type="number" step="0.01" name="minimum_payment" value="0" /></label>
+            <button type="submit">Add card</button>
+          </form>
+        </div>
+        <div class="panel form-panel">
+          <h2>Make a payment</h2>
+          <form id="form-card-payment">
+            <label>Card<select name="credit_card_id" required data-fill="cards"></select></label>
+            <label>Pay from<select name="account_id" required data-fill="accounts"></select></label>
+            <label>Amount<input type="number" step="0.01" name="amount" required /></label>
+            <button type="submit">Pay card</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Your cards</h2>
+        <div id="cards-list" class="card-grid"></div>
+      </div>
+    </section>
+
+    <!-- BUDGETS -->
+    <section id="view-budgets" class="view">
+      <header class="view-header">
+        <h1>Budgets</h1>
+        <p class="subtitle">Set a monthly spending limit per category</p>
+      </header>
+
+      <div class="panel form-panel">
+        <h2>Set a category budget</h2>
+        <form id="form-budget">
+          <label>Category
+            <select name="category" required>
+              <option>Food</option><option>Transport</option><option>Fuel</option><option>Internet</option>
+              <option>Mobile</option><option>Shopping</option><option>Education</option><option>Family</option>
+              <option>Entertainment</option><option>Medical</option><option>Bills</option><option>Other</option>
+            </select>
+          </label>
+          <label>Monthly limit<input type="number" step="0.01" name="monthly_limit" required /></label>
+          <button type="submit">Save budget</button>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h2>Current budgets</h2>
+        <div id="budgets-list" class="list-block"></div>
+      </div>
+    </section>
+
+    <!-- SAVINGS -->
+    <section id="view-savings" class="view">
+      <header class="view-header">
+        <h1>Savings Goals</h1>
+        <p class="subtitle">Set targets and track progress</p>
+      </header>
+
+      <div class="panel-row">
+        <div class="panel form-panel">
+          <h2>New goal</h2>
+          <form id="form-goal">
+            <label>Goal name<input type="text" name="name" required /></label>
+            <label>Target amount<input type="number" step="0.01" name="target_amount" required /></label>
+            <label>Already saved<input type="number" step="0.01" name="current_amount" value="0" /></label>
+            <label>Deadline<input type="date" name="deadline" /></label>
+            <button type="submit">Create goal</button>
+          </form>
+        </div>
+        <div class="panel form-panel">
+          <h2>Add to a goal</h2>
+          <form id="form-contribute">
+            <label>Goal<select name="goal_id" required data-fill="goals"></select></label>
+            <label>From account<select name="account_id" required data-fill="accounts"></select></label>
+            <label>Amount<input type="number" step="0.01" name="amount" required /></label>
+            <button type="submit">Contribute</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Your goals</h2>
+        <div id="goals-list" class="card-grid"></div>
+      </div>
+    </section>
+
+    <!-- BILLS -->
+    <section id="view-bills" class="view">
+      <header class="view-header">
+        <h1>Bills</h1>
+        <p class="subtitle">Recurring and one-time bills</p>
+      </header>
+
+      <div class="panel form-panel">
+        <h2>Add a bill</h2>
+        <form id="form-bill">
+          <label>Name<input type="text" name="name" required /></label>
+          <label>Amount<input type="number" step="0.01" name="amount" required /></label>
+          <label>Due date<input type="date" name="due_date" required /></label>
+          <label>Frequency
+            <select name="frequency">
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+              <option value="one-time">One-time</option>
+            </select>
+          </label>
+          <label>Pay from<select name="account_id" data-fill="accounts"></select></label>
+          <button type="submit">Add bill</button>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h2>All bills</h2>
+        <div id="bills-list" class="list-block"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
